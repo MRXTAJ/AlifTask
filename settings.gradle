@@ -1,0 +1,2 @@
+rootProject.name = "AlifTask"
+include ':app'
