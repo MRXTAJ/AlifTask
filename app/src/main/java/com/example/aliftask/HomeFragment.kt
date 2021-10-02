@@ -6,8 +6,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.example.aliftask.database.Data
 import com.example.aliftask.databinding.FragmentHomeBinding
 import com.example.aliftask.viewmodel.ApiStatus
 import com.example.aliftask.viewmodel.MainViewModel
@@ -18,7 +20,7 @@ class HomeFragment : Fragment() {
     private lateinit var mViewModel: MainViewModel
     private lateinit var mRecyclerView: RecyclerView
     private lateinit var mAdapter: AdapterGridScrollProgress
-    private val itemPerDisplay = 3
+    private val itemPerDisplay = 16
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,11 +36,24 @@ class HomeFragment : Fragment() {
         mBinding.recyclerView.setHasFixedSize(true)
         mRecyclerView = mBinding.recyclerView
         mViewModel.data.observe(viewLifecycleOwner, {
+
+            for (i in it) {
+                i.progress = false
+            }
             mAdapter =
                 AdapterGridScrollProgress(requireContext(),
                     itemPerDisplay,
                     it)
             mRecyclerView.adapter = mAdapter
+
+            mAdapter.setOnItemClickListener(object : AdapterGridScrollProgress.OnItemClickListener {
+                override fun onItemClick(view: View?, obj: Data?, position: Int) {
+                    if (obj != null) {
+                        findNavController().navigate(HomeFragmentDirections.actionHomeFragmentToDetailsFragment(
+                            obj.url))
+                    }
+                }
+            })
 
             mAdapter.setOnLoadMoreListener(object : AdapterGridScrollProgress.OnLoadMoreListener {
                 override fun onLoadMore(current_page: Int) {
@@ -62,7 +77,6 @@ class HomeFragment : Fragment() {
                     ApiStatus.SUCCESS -> {
                         mViewModel.data.value?.let { it1 -> mAdapter.insertData(it1) }
                     }
-
                     else -> {
 
                     }
@@ -71,4 +85,5 @@ class HomeFragment : Fragment() {
         })
 
     }
+
 }

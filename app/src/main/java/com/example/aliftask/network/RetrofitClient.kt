@@ -24,12 +24,12 @@ object RetrofitClient {
 }
 
 interface RetrofitServices {
-    @GET("service/v2/upcomingGuides/")
+    @GET("/service/v2/upcomingGuides/")
     fun getGuidesListAsync(): Deferred<Response<Guides>>
 }
 
 object GuidesApi {
-    private const val BASE_URL = "https://guidebook.com/"
+    const val BASE_URL = "https://guidebook.com"
     val retrofitService: RetrofitServices
         get() = RetrofitClient.getClient(BASE_URL).create(RetrofitServices::class.java)
 }

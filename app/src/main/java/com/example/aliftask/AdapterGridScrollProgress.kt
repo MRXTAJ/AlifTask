@@ -6,16 +6,20 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.ProgressBar
+import android.widget.TextView
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.example.aliftask.database.Data
 import com.example.aliftask.utils.displayImageOriginal
+import com.google.android.material.card.MaterialCardView
+import org.w3c.dom.Text
 import kotlin.collections.ArrayList
 
 class AdapterGridScrollProgress(
     context: Context,
     item_per_display: Int,
-    items: MutableList<Data>?,
+    private var items: MutableList<Data>?,
 ) :
     RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
@@ -27,14 +31,12 @@ class AdapterGridScrollProgress(
     private var item_per_display = 0
 
 
-    private var items: MutableList<Data>?
     private var loading = false
     private var onLoadMoreListener: OnLoadMoreListener? = null
     private val ctx: Context
     private var mOnItemClickListener: OnItemClickListener? = null
 
     init {
-        this.items = items
         this.item_per_display = item_per_display
         ctx = context
     }
@@ -48,7 +50,10 @@ class AdapterGridScrollProgress(
     }
 
     class OriginalViewHolder(v: View) : RecyclerView.ViewHolder(v) {
-        var image: ImageView = v.findViewById<View>(R.id.movie_poster) as ImageView
+        val image: ImageView = v.findViewById(R.id.icon) as ImageView
+        val name: TextView = v.findViewById(R.id.name) as TextView
+        val endDate: TextView = v.findViewById(R.id.endDate) as TextView
+        val layout: MaterialCardView = v.findViewById(R.id.layout) as MaterialCardView
 
     }
 
@@ -74,13 +79,14 @@ class AdapterGridScrollProgress(
         val s: Data = items!![position]
         if (holder is OriginalViewHolder) {
             displayImageOriginal(ctx, holder.image, s.icon)
-//            holder.layout.setOnClickListener(View.OnClickListener { view ->
-//                if (mOnItemClickListener == null) return@OnClickListener
-//                mOnItemClickListener!!.onItemClick(view, s, position)
-//            })
+            holder.name.text = s.name
+            holder.endDate.text = s.endDate
+            holder.layout.setOnClickListener(View.OnClickListener { view ->
+                if (mOnItemClickListener == null) return@OnClickListener
+                mOnItemClickListener!!.onItemClick(view, s, position)
+            })
         } else {
-            (holder as ProgressViewHolder).progressBar.isIndeterminate =
-                true
+            (holder as ProgressViewHolder).progressBar.isIndeterminate = true
         }
         if (s.progress) {
             val layoutParams =
@@ -114,7 +120,7 @@ class AdapterGridScrollProgress(
         notifyItemRangeInserted(positionStart, itemCount)
     }
 
-    fun setLoaded() {
+    private fun setLoaded() {
         loading = false
         for (i in 0 until itemCount) {
             if (items!![i].progress) {
@@ -132,10 +138,6 @@ class AdapterGridScrollProgress(
         }
     }
 
-    fun resetListData() {
-        items = ArrayList<Data>()
-        notifyDataSetChanged()
-    }
 
     fun setOnLoadMoreListener(onLoadMoreListener: OnLoadMoreListener?) {
         this.onLoadMoreListener = onLoadMoreListener

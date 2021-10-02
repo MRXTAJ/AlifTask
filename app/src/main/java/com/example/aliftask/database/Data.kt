@@ -26,7 +26,7 @@ class Data {
         this.name = name
         this.endDate = endDate
         this.icon = icon
-        progress = section
+        this.progress = section
     }
 
 }
