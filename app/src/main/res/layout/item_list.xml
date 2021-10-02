@@ -1,15 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
+<layout>
+    <data>
 
-<com.google.android.material.card.MaterialCardView
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    app:cardCornerRadius="10dp"
-    android:id="@+id/layout"
-    app:cardElevation="5dp"
-    app:cardUseCompatPadding="true"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+        <variable
+            name="properties"
+            type="com.example.aliftask.database.Data" />
+    </data>
+
+    <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="5dp"
+        app:cardUseCompatPadding="true">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
@@ -25,7 +31,7 @@
                 android:ellipsize="end"
                 android:gravity="center_vertical"
                 android:maxLines="2"
-                android:text="Bentley University 2021 Fall Open House"
+                android:text="@{properties.name}"
                 android:textColor="@color/color_black"
                 android:textSize="13sp"
                 android:textStyle="bold"
@@ -36,15 +42,16 @@
 
             <ImageView
                 android:id="@+id/icon"
+                imgIcon="@{properties.icon}"
                 android:layout_width="0dp"
                 android:layout_height="90dp"
                 android:layout_marginTop="8dp"
-                tools:layout_height="200dp"
                 android:scaleType="fitCenter"
-                android:src="@drawable/logo"
+                tools:src="@drawable/logo"
                 app:layout_constraintEnd_toEndOf="@+id/name"
                 app:layout_constraintStart_toStartOf="@+id/name"
-                app:layout_constraintTop_toBottomOf="@+id/name" />
+                app:layout_constraintTop_toBottomOf="@+id/name"
+                tools:layout_height="200dp" />
 
             <TextView
                 android:id="@+id/endDate"
@@ -52,10 +59,10 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"
+                android:text="@{properties.endDate}"
                 android:textColor="@color/color_black"
                 android:textSize="13sp"
                 android:textStyle="bold"
-                android:text="Oct 03, 2021"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toEndOf="@+id/icon"
                 app:layout_constraintStart_toStartOf="@+id/icon"
@@ -65,3 +72,4 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
+</layout>

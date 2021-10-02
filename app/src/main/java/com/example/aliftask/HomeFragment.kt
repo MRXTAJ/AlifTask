@@ -1,6 +1,7 @@
 package com.example.aliftask
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,9 +19,7 @@ class HomeFragment : Fragment() {
 
     private lateinit var mBinding: FragmentHomeBinding
     private lateinit var mViewModel: MainViewModel
-    private lateinit var mRecyclerView: RecyclerView
-    private lateinit var mAdapter: AdapterGridScrollProgress
-    private val itemPerDisplay = 16
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -29,61 +28,16 @@ class HomeFragment : Fragment() {
 
         mBinding = FragmentHomeBinding.inflate(inflater)
 
+        mBinding.lifecycleOwner = this
+
         mViewModel = ViewModelProvider(this)[MainViewModel::class.java]
+        mBinding.viewModel = mViewModel
 
-        mBinding.recyclerView.layoutManager = StaggeredGridLayoutManager(2,
-            StaggeredGridLayoutManager.VERTICAL)
-        mBinding.recyclerView.setHasFixedSize(true)
-        mRecyclerView = mBinding.recyclerView
-        mViewModel.data.observe(viewLifecycleOwner, {
-
-            for (i in it) {
-                i.progress = false
-            }
-            mAdapter =
-                AdapterGridScrollProgress(requireContext(),
-                    itemPerDisplay,
-                    it)
-            mRecyclerView.adapter = mAdapter
-
-            mAdapter.setOnItemClickListener(object : AdapterGridScrollProgress.OnItemClickListener {
-                override fun onItemClick(view: View?, obj: Data?, position: Int) {
-                    if (obj != null) {
-                        findNavController().navigate(HomeFragmentDirections.actionHomeFragmentToDetailsFragment(
-                            obj.url))
-                    }
-                }
-            })
-
-            mAdapter.setOnLoadMoreListener(object : AdapterGridScrollProgress.OnLoadMoreListener {
-                override fun onLoadMore(current_page: Int) {
-                    loadNextData()
-                }
-            })
+        mBinding.recyclerView.adapter = GuidesAdapter(GuidesAdapter.OnClickListener {
+            findNavController().navigate(HomeFragmentDirections.actionHomeFragmentToDetailsFragment(
+                it.url))
         })
-
         return mBinding.root
-
     }
-
-    fun loadNextData() {
-        mAdapter.setLoading()
-        mViewModel.apiStatus.observe(viewLifecycleOwner, {
-            mViewModel.apiStatus.observe(viewLifecycleOwner, { status ->
-                when (status) {
-                    ApiStatus.LOADING -> {
-                        mAdapter.setLoading()
-                    }
-                    ApiStatus.SUCCESS -> {
-                        mViewModel.data.value?.let { it1 -> mAdapter.insertData(it1) }
-                    }
-                    else -> {
-
-                    }
-                }
-            })
-        })
-
-    }
-
 }
+
