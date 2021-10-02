@@ -5,20 +5,21 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AbsListView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.StaggeredGridLayoutManager
-import com.example.aliftask.database.Data
+import com.example.aliftask.database.AppDatabase
 import com.example.aliftask.databinding.FragmentHomeBinding
-import com.example.aliftask.viewmodel.ApiStatus
 import com.example.aliftask.viewmodel.MainViewModel
+
 
 class HomeFragment : Fragment() {
 
     private lateinit var mBinding: FragmentHomeBinding
     private lateinit var mViewModel: MainViewModel
+    private lateinit var mAdapter: GuidesAdapter
 
 
     override fun onCreateView(
@@ -30,12 +31,40 @@ class HomeFragment : Fragment() {
 
         mBinding.lifecycleOwner = this
 
-        mViewModel = ViewModelProvider(this)[MainViewModel::class.java]
+        val application = requireNotNull(this.activity).application
+        val dataSource = AppDatabase.getInstance(application)
+        val viewModelFactory = MainViewModel.ViewModelFactory(dataSource, application)
+
+        mViewModel = ViewModelProvider(this, viewModelFactory)[MainViewModel::class.java]
         mBinding.viewModel = mViewModel
 
-        mBinding.recyclerView.adapter = GuidesAdapter(GuidesAdapter.OnClickListener {
+        mAdapter = GuidesAdapter(GuidesAdapter.OnClickListener {
             findNavController().navigate(HomeFragmentDirections.actionHomeFragmentToDetailsFragment(
                 it.url))
+        })
+
+        mBinding.recyclerView.adapter = mAdapter
+
+        mBinding.recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+            var scrollUp = -1
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                super.onScrolled(recyclerView, dx, dy)
+
+                if (dy > 0) {
+                    scrollUp = dy
+                    Log.e("scroll", "$dy")
+                } else {
+                    scrollUp = -1
+                }
+            }
+
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+
+                if (newState == AbsListView.OnScrollListener.SCROLL_STATE_IDLE && scrollUp != -1){
+                    mViewModel.setData()
+                }
+            }
         })
         return mBinding.root
     }
