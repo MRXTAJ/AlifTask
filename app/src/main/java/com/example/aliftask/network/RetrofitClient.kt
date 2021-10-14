@@ -1,10 +1,10 @@
 package com.example.aliftask.network
 
 import com.example.aliftask.model.Guides
-import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
-import kotlinx.coroutines.Deferred
+import io.reactivex.Observable
 import retrofit2.Response
 import retrofit2.Retrofit
+import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
 
@@ -12,10 +12,11 @@ object RetrofitClient {
     private var retrofit: Retrofit? = null
 
     fun getClient(baseUrl: String): Retrofit {
+
         if (retrofit == null) {
             retrofit = Retrofit.Builder()
                 .baseUrl(baseUrl)
-                .addCallAdapterFactory(CoroutineCallAdapterFactory())
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
         }
@@ -25,7 +26,7 @@ object RetrofitClient {
 
 interface RetrofitServices {
     @GET("/service/v2/upcomingGuides/")
-    fun getGuidesListAsync(): Deferred<Response<Guides>>
+    fun getGuidesListAsync(): Observable<Response<Guides>>
 }
 
 object GuidesApi {

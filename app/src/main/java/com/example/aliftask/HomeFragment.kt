@@ -1,7 +1,6 @@
 package com.example.aliftask
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,7 +12,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.aliftask.database.AppDatabase
 import com.example.aliftask.databinding.FragmentHomeBinding
 import com.example.aliftask.viewmodel.MainViewModel
-
 
 class HomeFragment : Fragment() {
 
@@ -50,11 +48,10 @@ class HomeFragment : Fragment() {
             override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
                 super.onScrolled(recyclerView, dx, dy)
 
-                if (dy > 0) {
-                    scrollUp = dy
-                    Log.e("scroll", "$dy")
+                scrollUp = if (dy > 0) {
+                    dy
                 } else {
-                    scrollUp = -1
+                    -1
                 }
             }
 

@@ -1,10 +1,13 @@
 package com.example.aliftask.viewmodel
 
+import android.annotation.SuppressLint
 import android.app.Application
 import androidx.lifecycle.*
 import com.example.aliftask.database.AppDatabase
 import com.example.aliftask.database.Data
 import com.example.aliftask.network.GuidesApi
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.*
 
 enum class ApiStatus { LOADING, SUCCESS, ERROR }
@@ -23,7 +26,7 @@ class MainViewModel(val database: AppDatabase, application: Application) :
 
     private val allData: ArrayList<Data> = arrayListOf()
 
-    var i = 0
+    private var i = 0
 
     private val viewModelJob = Job()
     private val coroutineScope = CoroutineScope(viewModelJob + Dispatchers.Main)
@@ -34,22 +37,27 @@ class MainViewModel(val database: AppDatabase, application: Application) :
     }
 
 
+    @SuppressLint("CheckResult")
     private fun getData() {
-        coroutineScope.launch {
-            val properties = GuidesApi.retrofitService.getGuidesListAsync()
-            try {
-                _apiStatus.value = ApiStatus.LOADING
-                val data = properties.await()
-                if (data.isSuccessful) {
-                    _apiStatus.value = ApiStatus.SUCCESS
-                    splittingData.value = splitData(data.body()?.data as ArrayList<Data>)
-                    setData()
-                } else {
-                    _apiStatus.value = ApiStatus.ERROR
-                }
-            } catch (e: Exception) {
-                _apiStatus.value = ApiStatus.ERROR
-            }
+
+        val properties = GuidesApi.retrofitService.getGuidesListAsync()
+        try {
+            _apiStatus.value = ApiStatus.LOADING
+            properties.subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .map { data ->
+                    data.errorBody()
+                    data.message()
+                    if (data.isSuccessful) {
+                        _apiStatus.value = ApiStatus.SUCCESS
+                        splittingData.value = splitData(data.body()?.data as ArrayList<Data>)
+                        setData()
+                    } else {
+                        _apiStatus.value = ApiStatus.ERROR
+                    }
+                }.subscribe()
+
+        } catch (e: Exception) {
+            _apiStatus.value = ApiStatus.ERROR
         }
     }
 
@@ -57,8 +65,8 @@ class MainViewModel(val database: AppDatabase, application: Application) :
 
         return list.withIndex().groupBy {
             it.index / 6
-        }.map {
-            it.value.map {
+        }.map { result ->
+            result.value.map {
                 it.value
             }
         }
@@ -88,7 +96,7 @@ class MainViewModel(val database: AppDatabase, application: Application) :
 
     class ViewModelFactory(
         private val dataSource: AppDatabase,
-        private val application: Application
+        private val application: Application,
     ) : ViewModelProvider.Factory {
         @Suppress("unchecked_cast")
         override fun <T : ViewModel?> create(modelClass: Class<T>): T {
